@@ -7,8 +7,10 @@ edition = "2021"
 anyhow = "1.0.86"
 async-trait = "0.1.80"
 bitcode = { version = "0.6.0", features = ["serde"] }
+candle-core = "0.6.0"
 
 clap = { version = "4.5.8", features = ["derive"] }
+hf-hub = "0.3.2"
 human_bytes = "0.4.3"
 lazy_static = "1.5.0"
 log = "0.4.22"

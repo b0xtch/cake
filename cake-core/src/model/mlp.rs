@@ -18,7 +18,7 @@ impl MLP {
     }
 
     /// Load this block from the VarBuilder given the specific configuration.
-    pub fn load(vb: VarBuilder, cfg: &super::Config) -> Result<Self> {
+    pub fn load(vb: VarBuilder, cfg: &crate::cake::Config) -> Result<Self> {
         let h_size = cfg.hidden_size;
         let i_size = cfg.intermediate_size;
         let gate_proj = linear(h_size, i_size, vb.pp("gate_proj"))?;

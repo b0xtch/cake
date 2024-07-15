@@ -2,7 +2,9 @@
 uniffi::setup_scaffolding!();
 
 use cake_core::{
-    cake::{Context, Mode, Worker}, model::LLama, Args
+    cake::{Context, Mode, Worker},
+    model::LLama,
+    Args,
 };
 
 #[uniffi::export]

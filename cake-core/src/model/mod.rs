@@ -46,7 +46,7 @@ impl std::fmt::Display for Token {
 #[async_trait]
 pub trait Generator {
     /// This associated type determines which part of the model can be sharded.
-    type Shardable : Forwarder;
+    type Shardable: Forwarder;
     /// Load the model from the context.
     async fn load(context: Context) -> Result<Box<Self>>;
     /// Return the next token.

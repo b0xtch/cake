@@ -93,3 +93,35 @@ This will create a smaller folder with only the required layers tensors and the 
 ## License
 
 Released under the GPL 3 license. To see the licenses of the project dependencies, install cargo license with `cargo install cargo-license` and then run `cargo license`.
+
+
+# Install CUDA
+
+```
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-ubuntu2404.pin
+
+sudo mv cuda-ubuntu2404.pin /etc/apt/preferences.d/cuda-repository-pin-600
+
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo apt-get update
+sudo apt-get -y install cuda-toolkit-12-5
+
+vi ~/.bashrc
+export PATH=/usr/local/cuda-12.4/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
+source ~/.bashrc
+
+git clone https://github.com/evilsocket/cake.git
+git clone https://huggingface.co/meta-llama/Meta-Llama-3-8B ./meta
+
+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
+
+touch topology.yaml
+
+cargo run --bin cake-cli -- --model ./meta --mode worker --name macbook --topology topology.yaml --address 0.0.0.0:10128
+
+cargo run --bin cake-cli -- --model ./meta \
+         --topology topology.yml
+```

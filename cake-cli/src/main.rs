@@ -3,7 +3,9 @@
 use std::io::Write;
 
 use cake_core::{
-    cake::{Context, Master, Mode, Worker}, model::LLama, Args
+    cake::{Context, Master, Mode, Worker},
+    model::LLama,
+    Args,
 };
 
 use anyhow::Result;
@@ -43,12 +45,7 @@ async fn main() -> Result<()> {
                 })
                 .await
         }
-        Mode::Worker => {
-            Worker::<LLama>::new(ctx)
-                .await?
-                .run()
-                .await
-        }
+        Mode::Worker => Worker::<LLama>::new(ctx).await?.run().await,
     };
 
     if ret.is_err() {

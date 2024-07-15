@@ -1,0 +1,11 @@
+linux_server_1:
+  host: '54.245.168.183:10128'
+  description: 'NVIDIA Titan X Pascal (12GB)'
+  layers:
+    - 'model.layers.0-19'
+
+macbook:
+  host: 'https://infinitely-sacred-pika.ngrok-free.app:10128'
+  description: 'M1 Max'
+  layers:
+    - 'model.layers.20-31'

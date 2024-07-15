@@ -89,10 +89,10 @@ impl CausalSelfAttention {
     }
 
     /// Load an instance of this object from the VarBuilder object with the given configuration.
-    pub fn load(vb: VarBuilder, cfg: &super::Config) -> Result<Self> {
+    pub fn load(vb: VarBuilder, cfg: &crate::cake::Config) -> Result<Self> {
         let size_in = cfg.hidden_size;
         let size_q = (cfg.hidden_size / cfg.num_attention_heads) * cfg.num_attention_heads;
-        let size_kv = (cfg.hidden_size / cfg.num_attention_heads) * cfg.num_key_value_heads;
+        let size_kv = (cfg.hidden_size / cfg.num_attention_heads) * cfg.num_key_value_heads.unwrap();
         let q_proj = linear(size_in, size_q, vb.pp("q_proj"))?;
         let k_proj = linear(size_in, size_kv, vb.pp("k_proj"))?;
         let v_proj = linear(size_in, size_kv, vb.pp("v_proj"))?;
@@ -103,7 +103,7 @@ impl CausalSelfAttention {
             v_proj,
             o_proj,
             num_attention_heads: cfg.num_attention_heads,
-            num_key_value_heads: cfg.num_key_value_heads,
+            num_key_value_heads: cfg.num_key_value_heads.unwrap(),
             head_dim: cfg.hidden_size / cfg.num_attention_heads,
         })
     }

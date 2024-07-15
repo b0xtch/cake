@@ -146,7 +146,7 @@ impl LLama {
 #[async_trait]
 impl Generator for LLama {
     type Shardable = Transformer;
-    
+
     /// Load this model from the context.
     async fn load(ctx: Context) -> Result<Box<Self>> {
         log::info!("loading embeddings ...");

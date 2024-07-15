@@ -87,7 +87,7 @@ impl std::fmt::Display for Client {
 
 #[async_trait]
 impl super::Forwarder for Client {
-    fn load(_: String, _: candle_nn::VarBuilder, _: &crate::model::Config) -> Result<Box<Self>> {
+    fn load(_: String, _: candle_nn::VarBuilder, _: &crate::cake::Config) -> Result<Box<Self>> {
         Err(anyhow!("load should never be called on cake::Client"))
     }
 

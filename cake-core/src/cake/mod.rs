@@ -5,11 +5,13 @@ use std::{
 
 use anyhow::Result;
 use async_trait::async_trait;
+use candle_core as candle;
 use candle_core::{DType, Device, Tensor};
 use candle_nn::VarBuilder;
+use hf_hub::{api::sync::Api, Repo, RepoType};
 
 use crate::{
-    model::{Cache, Config, LlamaConfig},
+    model::Cache,
     utils, Args,
 };
 
@@ -24,6 +26,8 @@ pub use master::*;
 pub use proto::*;
 pub use topology::*;
 pub use worker::*;
+
+pub type Config = candle_transformers::models::llama::LlamaConfig;
 
 /// Determines if we run in master or worker mode.
 #[derive(clap::ValueEnum, Clone, Debug, Default)]
@@ -73,14 +77,28 @@ impl Context {
         let data_path = PathBuf::from(&args.model);
 
         let config_filename = data_path.join("config.json");
-        let config = LlamaConfig::from_path(&config_filename)?.into_config();
+        // let config = LlamaConfig::from_path(&config_filename)?.into_config();
 
         let topology = Topology::from_path(&args.topology)?;
-        let cache = Cache::new(true, dtype, &config, &device)?;
 
-        let model_tensors_index: PathBuf = data_path.join("model.safetensors.index.json");
+        // let model_tensors_index: PathBuf = data_path.join("model.safetensors.index.json");
+        // let var_builder =
+        //     utils::load_var_builder_from_index(model_tensors_index, dtype, device.clone())?;
+
+        let api = Api::new()?;
+        let model_id = "meta-llama/Meta-Llama-3-8B".to_string();
+        println!("loading the model weights from {model_id}");
+        let revision = "main".to_string();
+        let api = api.repo(Repo::with_revision(model_id, RepoType::Model, revision));
+        let config_filename = api.get("config.json")?;
+        let config: Config = serde_json::from_slice(&std::fs::read(config_filename)?)?;
+        let tokenizer_filename = api.get("tokenizer.json")?;
+        let filenames = hub_load_safetensors(&api, "model.safetensors.index.json")?;
+
+        let cache = Cache::new(true, dtype, &config, &device)?;
+        println!("building the model");
         let var_builder =
-            utils::load_var_builder_from_index(model_tensors_index, dtype, device.clone())?;
+            unsafe { VarBuilder::from_mmaped_safetensors(&filenames, dtype, &device)? };
 
         Ok(Context {
             args,
@@ -138,4 +156,30 @@ pub trait Forwarder: Debug + Send + Sync + Display {
     fn ident(&self) -> &str {
         "local"
     }
+}
+
+pub fn hub_load_safetensors(
+    repo: &hf_hub::api::sync::ApiRepo,
+    json_file: &str,
+) -> candle::Result<Vec<std::path::PathBuf>> {
+    let json_file = repo.get(json_file).map_err(candle::Error::wrap)?;
+    let json_file = std::fs::File::open(json_file)?;
+    let json: serde_json::Value =
+        serde_json::from_reader(&json_file).map_err(candle::Error::wrap)?;
+    let weight_map = match json.get("weight_map") {
+        None => candle::bail!("no weight map in {json_file:?}"),
+        Some(serde_json::Value::Object(map)) => map,
+        Some(_) => candle::bail!("weight map in {json_file:?} is not a map"),
+    };
+    let mut safetensors_files = std::collections::HashSet::new();
+    for value in weight_map.values() {
+        if let Some(file) = value.as_str() {
+            safetensors_files.insert(file.to_string());
+        }
+    }
+    let safetensors_files = safetensors_files
+        .iter()
+        .map(|v| repo.get(v).map_err(candle::Error::wrap))
+        .collect::<candle::Result<Vec<_>>>()?;
+    Ok(safetensors_files)
 }

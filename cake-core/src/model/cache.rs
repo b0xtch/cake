@@ -2,7 +2,9 @@ use std::collections::HashMap;
 
 use candle_core::{DType, Device, Result, Tensor, D};
 
-use super::{Config, MAX_SEQ_LEN};
+use crate::cake::Config;
+
+use super::MAX_SEQ_LEN;
 
 /// Abstraction over cosine and sine tables, kv-caching and attention masking.
 #[derive(Debug, Clone)]
